@@ -1,0 +1,65 @@
+services:
+  voltdb:
+    image: ilkinulas/voltdb:latest
+    container_name: voltdb_server
+    ports:
+      - "21212:21212"
+      - "8080:8080"
+      - "21211:21211"
+    environment:
+      - HOST_COUNT=1
+    command: ["voltdb", "create"]
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/1.0/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_server
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fraud_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d fraud_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_server
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: fraud_db
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  data_loader:
+    image: python:3.10-alpine
+    container_name: python_data_loader
+    environment:
+      - VOLTDB_HOST=voltdb
+      - POSTGRES_HOST=postgres
+      - MYSQL_HOST=mysql
+    depends_on:
+      - voltdb
+      - postgres
+      - mysql
+    volumes:
+      - .:/app
+      - ../data:/data
+    working_dir: /app
+    command: >
+      sh -c "apk add --no-cache libpq && pip install requests psycopg2-binary pymysql cryptography && sleep 15 && python load_data.py"

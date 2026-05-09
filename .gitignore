@@ -1,0 +1,35 @@
+# Python environments
+.venv/
+.venv-1/
+voltdb_setup/.venv/
+
+# Editor and workspace settings
+.vscode/
+.idea/
+
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Generated data and local databases
+voltdb_setup/fraud_sqlite.db
+voltdb_setup/*.bak
+data/*.csv
+data/**/*.csv
+voltdb_setup/*.csv
+
+# OS files
+.DS_Store
+Thumbs.db
